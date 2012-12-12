@@ -11,3 +11,8 @@
 *.lai
 *.la
 *.a
+
+# IDE project files
+*.vcxproj
+*.filters
+*.user
