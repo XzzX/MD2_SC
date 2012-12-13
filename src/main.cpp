@@ -76,10 +76,8 @@ int main( unsigned int argc, char **argv ) {
         mdSystem.MoveToNextEvent();
 
         if (!config.mNoGUI){
-            /*if (md_system.m_config.boundaries==periodic){
-                Vector pos(md_system.m_config.box_width*0.5, md_system.m_config.box_height*0.5, 0.0);
-                pMainWindow->DrawRectangle(pos,md_system.m_config.box_width,md_system.m_config.box_height, gWhite);
-            }*/
+
+			pMainWindow->DrawRectangle(Vector(config.mBoxWidth*0.5, config.mBoxHeight*0.5, 0.0), config.mBoxWidth, config.mBoxHeight, gRed);
 
             for(unsigned int i=0; i < mdSystem.GetNumberOfParticles(); i++)
                 pMainWindow->DrawCircle(mdSystem.mParticleVector[i].mPosition, mdSystem.mParticleVector[i].mColor, mdSystem.mParticleVector[i].mRadius);

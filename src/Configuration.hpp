@@ -5,6 +5,7 @@
 #include	<sstream>
 #include	<iomanip>
 #include	<string>
+#include    <stdexcept>
 
 enum lattice_types {
     onlyone,

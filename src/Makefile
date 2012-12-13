@@ -1,5 +1,5 @@
 # files:
-OBJ = system.o particles.o Window.o main.o CellSubdivision.o MeanVar.o Histogram.o
+OBJ = CellSubdivision.o Color.o Configuration.o Event.o MDSystem.o MeanVar.o Particle.o Window.o main.o util.o
 BIN = main
 
 # compiler options
@@ -32,9 +32,9 @@ clean:
 
 # linking
 $(BIN):	$(OBJ)
-	$(CXX) $(CCFLAGS) $+ -o $@ $(LDFLAGS) 
+	$(CXX) $(CCFLAGS) $+ -o $@ $(LDFLAGS)
 
 # compiling
-%.o: %.cc 
+%.o: %.cc
 	$(CXX) $(CCFLAGS) -c $< -o $@
 

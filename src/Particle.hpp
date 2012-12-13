@@ -36,7 +36,7 @@ class Particle {
 		///calculates the moment of the collision with a wall
 		double	CalcCollisionTimeWithWall(const Vector& point, const Vector& normal);
 		///calculates the moment of the collision with a particle
-		double	CalcCollisionTimeWithParticle(const Particle& particle);
+		double	CalcCollisionTimeWithParticle(const Particle& particle, const double systemTime);
 		///calculates the new speed after the collision with a wall
 		void	CollideWithWall(const Vector& point, const Vector& normal);
 		///calculates the new speed after the collision with another particle

@@ -5,6 +5,7 @@
 
 class	Configuration;
 class	Particle;
+class	Event;
 
 class	MDSystem{
 	private:
@@ -20,6 +21,8 @@ class	MDSystem{
 		unsigned int	GetNumberOfParticles(); //inline
 
 		void	MoveToNextEvent();
+
+		void	EvaluateEvent(const Event& event);
 
 		MDSystem(Configuration&	config);
 };

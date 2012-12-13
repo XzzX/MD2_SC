@@ -1,3 +1,5 @@
+#include	<iostream>
+
 #include	"Particle.hpp"
 
 Particle::Particle() :
@@ -13,7 +15,7 @@ Particle::Particle() :
 }
 
 /**
-Moves the particle forward in time using only its speed. No collision detection is applied! 
+Moves the particle forward in time using only its speed. No collision detection is applied!
 Movement is calculated on the difference between system time and inherent time.
 @param time system time
 **/
@@ -25,7 +27,7 @@ void	Particle::MoveToTime(const double	time){
 /**
 @param point point within the wall
 @param normal normal vector of the wall
-@return time of collision
+@return absolut time of collision
 **/
 double	Particle::CalcCollisionTimeWithWall(const Vector& point, const Vector& normal){
 	//normal constant of plane equation
@@ -35,7 +37,7 @@ double	Particle::CalcCollisionTimeWithWall(const Vector& point, const Vector& no
 /**
 
 **/
-double	Particle::CalcCollisionTimeWithParticle(const Particle& particle){
+double	Particle::CalcCollisionTimeWithParticle(const Particle& particle, const double systemTime){
 	double d = mRadius + particle.mRadius;
 	Vector x = mPosition - mSpeed*mInherentTime - particle.mPosition + particle.mSpeed*particle.mInherentTime;
 	Vector y = mSpeed - particle.mSpeed;
@@ -46,9 +48,9 @@ double	Particle::CalcCollisionTimeWithParticle(const Particle& particle){
 	double	D = b*b - 4.0*a*c;
 	if	(D<0)	return -1.0;	//negative event times will be discarded
 	double	t1 = (-b + sqrt(D) ) / 2.0 / a;
-	double	t2 = (-b + sqrt(D) ) / 2.0 / a;
-	if	((t1<t2)&&(t1>0)) return t1;
-	if	(t2>0) return t2;
+	double	t2 = (-b - sqrt(D) ) / 2.0 / a;
+	if	( (t1<t2) && (t1>systemTime) )  return t1;
+	if	( (t2>systemTime) )  return t2;
 	return -1.0;
 }
 
@@ -59,7 +61,49 @@ void	Particle::CollideWithWall(const Vector& point, const Vector& normal){
 }
 /**
 **/
+//http://www.spieleprogrammierung.net/2010/01/kollision-von-massenpunkten-im-3d-raum.html
 void	Particle::CollideWithParticle(Particle& particle){
+    // Berechnung der Kollisionsachse (normierte Verbindungslinie zwischen
+    // den kollidierenden Massepunkten):
+    Vector CollisionAxis = particle.mPosition - mPosition;
 
+    CollisionAxis /= norm(CollisionAxis);
+
+    // Berechnung der Anfangsgeschwindigkeitsbeträge entlang der
+    // Kollisionsachse:
+    double tempFactor1 = dot(mSpeed, CollisionAxis);
+    double tempFactor2 = dot(particle.mSpeed, CollisionAxis);
+
+    Vector CollisionAxisVelocity1 = tempFactor1*CollisionAxis;
+    Vector CollisionAxisVelocity2 = tempFactor2*CollisionAxis;
+
+    // Subtrahiert man nun diese Geschwindigkeitsbeträge
+    // von den Anfangsgeschwindigkeiten, so erhält man die
+    // Geschwindigkeitsanteile, die während der Kollision
+    // unverändert bleiben:
+    mSpeed -= CollisionAxisVelocity1;
+    particle.mSpeed -= CollisionAxisVelocity2;
+
+    // Berechnung der Geschwindigkeitsanteile entlang
+    // der Kollisionsachse nach dem Stoß:
+    float tempFactor3 = mMass + particle.mMass;
+    float tempFactor4 = mMass - particle.mMass;
+
+    float tempFactor5 = (2.0f*particle.mMass*tempFactor2 + tempFactor1*tempFactor4)/
+                         tempFactor3;
+
+    float tempFactor6 = (2.0f*mMass*tempFactor1 - tempFactor2*tempFactor4)/
+                         tempFactor3;
+
+    CollisionAxisVelocity1 = tempFactor5*CollisionAxis;
+    CollisionAxisVelocity2 = tempFactor6*CollisionAxis;
+
+    // Addiert man die Geschwindigkeitsanteile entlang
+    // der Kollisionsachse nach dem Stoß zu den
+    // Geschwindigkeitsanteilen, die während des Stoßes
+    // unverändert bleiben, erhält man die
+    // Endgeschwindigkeiten:
+    mSpeed += CollisionAxisVelocity1;
+    particle.mSpeed += CollisionAxisVelocity2;
 }
 

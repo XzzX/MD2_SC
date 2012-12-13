@@ -4,11 +4,12 @@
 class	Event{
 	public:
 		enum {
-			NONE = -1, 
-			COLLISION_WITH_LEFT_WALL = -2,
-			COLLISION_WITH_RIGHT_WALL = -3,
-			COLLISION_WITH_BOTTOM_WALL = -4,
-			COLLISION_WITH_TOP_WALL = -5
+			NONE 						= -1,
+			UPDATE						= -2,
+			COLLISION_WITH_LEFT_WALL 	= -3,
+			COLLISION_WITH_RIGHT_WALL 	= -4,
+			COLLISION_WITH_BOTTOM_WALL 	= -5,
+			COLLISION_WITH_TOP_WALL 	= -6
 		};
 
 		double	mTime;
@@ -19,7 +20,7 @@ class	Event{
 		Event*	mNextJ;
 		Event*	mPrevJ;
 
-		Event();
+		Event(const double time, const int i, const int j);
 };
 
 #endif
