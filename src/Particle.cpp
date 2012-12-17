@@ -27,7 +27,7 @@ void	Particle::MoveToTime(const double	time){
 /**
 @param point point within the wall
 @param normal normal vector of the wall
-@return absolut time of collision
+@return absolut time of collision. Negative values mean collision won't happen!
 **/
 double	Particle::CalcCollisionTimeWithWall(const Vector& point, const Vector& normal){
 	//normal constant of plane equation
@@ -35,7 +35,9 @@ double	Particle::CalcCollisionTimeWithWall(const Vector& point, const Vector& no
 	return (mRadius - dot(normal, mPosition) - c)/(dot(normal, mSpeed)) + mInherentTime;
 }
 /**
-
+@param particle second particle for the collision test
+@param systemTime current system time, used to determine which collision time lies in the past
+@return absolut time of collision. Negative values mean collision won't happen!
 **/
 double	Particle::CalcCollisionTimeWithParticle(const Particle& particle, const double systemTime){
 	double d = mRadius + particle.mRadius;
@@ -55,11 +57,16 @@ double	Particle::CalcCollisionTimeWithParticle(const Particle& particle, const d
 }
 
 /**
+@param point point in the wall plane
+@param normal normal vector of the wall plane
 **/
 void	Particle::CollideWithWall(const Vector& point, const Vector& normal){
-	mSpeed -= 2.0 * normal * dot(normal, mSpeed);
+	if (dot(mSpeed, normal)<0)
+		mSpeed -= 2.0 * normal * dot(normal, mSpeed);
 }
 /**
+The speed of both particles will be recalculated!
+@param particle referenz to the other particle
 **/
 //http://www.spieleprogrammierung.net/2010/01/kollision-von-massenpunkten-im-3d-raum.html
 void	Particle::CollideWithParticle(Particle& particle){
@@ -67,43 +74,46 @@ void	Particle::CollideWithParticle(Particle& particle){
     // den kollidierenden Massepunkten):
     Vector CollisionAxis = particle.mPosition - mPosition;
 
-    CollisionAxis /= norm(CollisionAxis);
+	if ((dot(mSpeed, CollisionAxis)>0)||(dot(particle.mSpeed, CollisionAxis)<0)){
 
-    // Berechnung der Anfangsgeschwindigkeitsbeträge entlang der
-    // Kollisionsachse:
-    double tempFactor1 = dot(mSpeed, CollisionAxis);
-    double tempFactor2 = dot(particle.mSpeed, CollisionAxis);
+		CollisionAxis /= norm(CollisionAxis);
 
-    Vector CollisionAxisVelocity1 = tempFactor1*CollisionAxis;
-    Vector CollisionAxisVelocity2 = tempFactor2*CollisionAxis;
+		// Berechnung der Anfangsgeschwindigkeitsbeträge entlang der
+		// Kollisionsachse:
+		double tempFactor1 = dot(mSpeed, CollisionAxis);
+		double tempFactor2 = dot(particle.mSpeed, CollisionAxis);
 
-    // Subtrahiert man nun diese Geschwindigkeitsbeträge
-    // von den Anfangsgeschwindigkeiten, so erhält man die
-    // Geschwindigkeitsanteile, die während der Kollision
-    // unverändert bleiben:
-    mSpeed -= CollisionAxisVelocity1;
-    particle.mSpeed -= CollisionAxisVelocity2;
+		Vector CollisionAxisVelocity1 = tempFactor1*CollisionAxis;
+		Vector CollisionAxisVelocity2 = tempFactor2*CollisionAxis;
 
-    // Berechnung der Geschwindigkeitsanteile entlang
-    // der Kollisionsachse nach dem Stoß:
-    float tempFactor3 = mMass + particle.mMass;
-    float tempFactor4 = mMass - particle.mMass;
+		// Subtrahiert man nun diese Geschwindigkeitsbeträge
+		// von den Anfangsgeschwindigkeiten, so erhält man die
+		// Geschwindigkeitsanteile, die während der Kollision
+		// unverändert bleiben:
+		mSpeed -= CollisionAxisVelocity1;
+		particle.mSpeed -= CollisionAxisVelocity2;
 
-    float tempFactor5 = (2.0f*particle.mMass*tempFactor2 + tempFactor1*tempFactor4)/
-                         tempFactor3;
+		// Berechnung der Geschwindigkeitsanteile entlang
+		// der Kollisionsachse nach dem Stoß:
+		double tempFactor3 = mMass + particle.mMass;
+		double tempFactor4 = mMass - particle.mMass;
 
-    float tempFactor6 = (2.0f*mMass*tempFactor1 - tempFactor2*tempFactor4)/
-                         tempFactor3;
+		double tempFactor5 = (2.0f*particle.mMass*tempFactor2 + tempFactor1*tempFactor4)/
+							 tempFactor3;
 
-    CollisionAxisVelocity1 = tempFactor5*CollisionAxis;
-    CollisionAxisVelocity2 = tempFactor6*CollisionAxis;
+		double tempFactor6 = (2.0f*mMass*tempFactor1 - tempFactor2*tempFactor4)/
+							 tempFactor3;
 
-    // Addiert man die Geschwindigkeitsanteile entlang
-    // der Kollisionsachse nach dem Stoß zu den
-    // Geschwindigkeitsanteilen, die während des Stoßes
-    // unverändert bleiben, erhält man die
-    // Endgeschwindigkeiten:
-    mSpeed += CollisionAxisVelocity1;
-    particle.mSpeed += CollisionAxisVelocity2;
+		CollisionAxisVelocity1 = tempFactor5*CollisionAxis;
+		CollisionAxisVelocity2 = tempFactor6*CollisionAxis;
+
+		// Addiert man die Geschwindigkeitsanteile entlang
+		// der Kollisionsachse nach dem Stoß zu den
+		// Geschwindigkeitsanteilen, die während des Stoßes
+		// unverändert bleiben, erhält man die
+		// Endgeschwindigkeiten:
+		mSpeed += CollisionAxisVelocity1;
+		particle.mSpeed += CollisionAxisVelocity2;
+	}
 }
 

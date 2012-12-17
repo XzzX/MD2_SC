@@ -3,6 +3,11 @@
 
 #include	<sstream>
 
+/**
+Converts a string to an arbitrary type. >> operator must be defined for the target type.
+@param string string which should be converted
+@return converted string
+**/
 template<typename T>
 T StringTo(const std::string& string){
     T valor;

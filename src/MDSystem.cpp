@@ -5,10 +5,27 @@
 #include	"Event.h"
 
 MDSystem::MDSystem(Configuration& config):
-	mBoxWidth(config.mBoxWidth),
-	mBoxHeight(config.mBoxHeight),
 	mSystemTime(0.0){
 
+	mRNG.seed(config.mRandomSeed);
+
+	if (config.mLatticeType == onlyone) InitParticlesOne(config);
+	if (config.mLatticeType == rectangular) InitParticlesRectangular(config);
+
+	mBoxWidth = config.mBoxWidth;
+	mBoxHeight = config.mBoxHeight;
+}
+
+double	MDSystem::RandomUniform(const double min, const double max){
+	boost::random::uniform_01<> uni;
+	return	uni(mRNG) * (max-min) + min;
+}
+
+/**
+Initialises one particle
+**/
+void MDSystem::InitParticlesOne(Configuration& config){
+	///not really one but testing configuration ;-)
 	Particle	dummy;
 	dummy.mPosition = Vector(5.0,5.0,0.0);
 	dummy.mSpeed = Vector(3.0,1.5, 0.0);
@@ -25,6 +42,36 @@ MDSystem::MDSystem(Configuration& config):
 	dummy.mPosition = Vector(5.0,8.0,0.0);
 	dummy.mSpeed = Vector(2.0,2.0, 0.0);
 	mParticleVector.push_back(dummy);
+}
+
+/**
+Tries to initialise m_config.number_particles particles in a rectangular pattern.
+**/
+void MDSystem::InitParticlesRectangular(Configuration& config){
+    //axial_ratio = v/h
+
+	unsigned int	numa(floor(sqrt(static_cast<double>(config.mNumberOfParticles))));
+    unsigned int	numb(numa);
+
+	Vector	a(1.0 * config.mLatticeSpace, 0, 0);
+    Vector	b(0.0, 1.0 * config.mLatticeSpace, 0);
+
+    Vector	delta((a+b)*0.5);
+
+    for (unsigned int i = 0; i<numa; i++)
+        for (unsigned int j = 0; j<numb; j++){
+            Particle dummy;
+
+            dummy.mPosition = i*a + j*b + delta;
+            double alpha = RandomUniform(0.0, 2*M_PI);
+            dummy.mSpeed = Vector(cos(alpha), sin(alpha), 0.0) * config.mParticleSpeed;
+
+            mParticleVector.push_back(dummy);
+        }
+
+    config.mNumberOfParticles = numa*numb;
+	config.mBoxWidth = a[0] * numa;
+	config.mBoxHeight = b[1] * numb;
 }
 
 void MDSystem::UpdateParticles(){

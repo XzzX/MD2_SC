@@ -16,32 +16,7 @@
 int main( unsigned int argc, char **argv ) {
 	Configuration	config;
 
-    unsigned int i = 1;
-    while (i<argc-1){
-        std::string cmd = argv[i];
-
-        if (cmd.compare("-N") == 0){
-            config.mNumberOfParticles = StringTo<unsigned int>(argv[i+1]);
-			i += 2;
-        }
-        else if (cmd.compare("-seed") == 0){
-            config.mRandomSeed = StringTo<unsigned int>(argv[i+1]);
-			i += 2;
-		}
-        else if (cmd.compare("-v") == 0){
-            config.mParticleSpeed = StringTo<double>(argv[i+1]);
-			i += 2;
-        }
-		else if (cmd.compare("-gui") == 0){
-            if (StringTo<int>(argv[i+1])==0)
-                config.mNoGUI = true;
-			i += 2;
-        }
-        else if (cmd.compare("-log") == 0){
-            config.mLogName = argv[i+1];
-			i += 2;
-        }
-    }
+	config.ReadCommandLineParameters(argc, argv);
 
     const Vector main_size(800,600);
     const Vector secondary_size(400,300);
@@ -59,21 +34,26 @@ int main( unsigned int argc, char **argv ) {
         pMainWindow->SetCameraPosition(Vector(-config.mBoxWidth*0.5, -config.mBoxHeight*0.5, -config.mBoxHeight*0.5));
 
 	MeanVar	meanRuntime;
+	MeanVar	systemRuntime;
 
 	boost::timer::cpu_timer timer;
+	boost::timer::cpu_timer timer2;
 
-
-    while (pMainWindow->IsOpen()){
+    while (config.mRuns>0){
+		config.mRuns--;
 		timer.start();
 
         if (!config.mNoGUI){
-            //if (pMainWindow->isOpen()) my_config.runs = 1;
+            if (pMainWindow->IsOpen()) config.mRuns = 1;
             pMainWindow->Clear();
             pMainWindow->ProcessEvents();
         }
 
 		//md_system.Observe();
+		timer2.start();
         mdSystem.MoveToNextEvent();
+		timer2.stop();
+		systemRuntime.Add(timer2.elapsed().user);
 
         if (!config.mNoGUI){
 
@@ -88,7 +68,8 @@ int main( unsigned int argc, char **argv ) {
         timer.stop();
         meanRuntime.Add(timer.elapsed().user);
     }
-
+	
+	std::cout << systemRuntime.Mean() << "\t" << systemRuntime.Error() << std::endl;
 	std::cout << "#mean runtime per cycle: \t" << meanRuntime.Mean() << std::endl;
 
 	std::cout << "Finished" << std::endl;

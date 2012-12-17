@@ -7,7 +7,7 @@
 #include	<string>
 #include    <stdexcept>
 
-enum lattice_types {
+enum LatticeTypes {
     onlyone,
     rectangular,
     triangular,
@@ -15,7 +15,7 @@ enum lattice_types {
     individual
 };
 
-inline std::ostream &operator << (std::ostream &stream, const lattice_types lattice)
+inline std::ostream &operator << (std::ostream &stream, const LatticeTypes lattice)
 {
     if (lattice == onlyone)
         stream << "onlyone lattice";
@@ -35,32 +35,29 @@ inline std::ostream &operator << (std::ostream &stream, const lattice_types latt
 }
 class Configuration{
 	public:
-		unsigned int mRandomSeed;				///seed of the random number generator
+		unsigned int mRandomSeed;				///<seed of the random number generator
 
-		unsigned int mNumberOfParticles;		///number of particles in the simulation
-		double	mBoxWidth;						///width  of the  simulation area
-		double	mBoxHeight;						///height of the simulation area
+		unsigned int mNumberOfParticles;		///<number of particles in the simulation
+		double	mLatticeSpace;					///<space between particles
+		double	mBoxWidth;						///<width  of the  simulation area
+		double	mBoxHeight;						///<height of the simulation area
 
-		double	mParticleSpeed;					///starting velocity of each particle
+		double	mParticleSpeed;					///<starting velocity of each particle
 
-		bool	mNoGUI;							///run without a graphical user interface
+		LatticeTypes	mLatticeType;			///<geometrical construction of lattice
 
-		std::string mLogName;					///filename of the logfile
+		unsigned int	mRuns;					///<number of simulation runs, only activ in nogui-mode
+		bool	mNoGUI;							///<run without a graphical user interface
+
+		std::string mLogName;					///<filename of the logfile
 
 		///load basic configuration
 		Configuration();
+		///read out the command line parameters
+		void	ReadCommandLineParameters( unsigned int argc, char **argv );
 };
 
-//overloaded << operator to show easily the configuration on the screen
-inline std::ostream &operator << (std::ostream &stream, const Configuration& config)
-{
-	stream << "#CONFIGURATION" << std::endl;
-	stream << "#seed:                " << config.mRandomSeed << std::endl;
-	stream << "#number of particles: " << config.mNumberOfParticles << std::endl;
-	stream << "#box_width:           " << config.mBoxWidth << std::endl;
-	stream << "#box height:          " << config.mBoxHeight << std::endl;
-	stream << "#logname:             " << config.mLogName << std::endl;
-    return stream;
-}
+///overloaded << operator to show easily the configuration on the screen
+std::ostream &operator << (std::ostream &stream, const Configuration& config);
 
 #endif

@@ -1,6 +1,19 @@
+/**
+ *  \file		Particle.hpp
+ *  \brief		Implements a class which represents a particle used in simulation.
+ *  \details	Used type is double
+ *  \author		Sebastian Eibl
+ *  \version	1.0
+ *  \date		16/12/2012
+ *  \pre		none
+ *  \bug		none
+ *  \warning	none
+ *  \copyright	Sebastian Eibl
+ */
+
 #ifndef PARTICLES_HPP
 #define PARTICLES_HPP
-#include <iomanip>
+#include	<iomanip>
 
 #include	"Color.h"
 #include	"Vector.hpp"
@@ -32,6 +45,8 @@ class Particle {
 
 		///moves the particle forward in time
 		void	MoveToTime(const double	time);
+		///restricts particle to box dimensions
+		void	PositionCorrecton(const double width, const double height);
 
 		///calculates the moment of the collision with a wall
 		double	CalcCollisionTimeWithWall(const Vector& point, const Vector& normal);
