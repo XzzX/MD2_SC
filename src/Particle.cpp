@@ -1,6 +1,7 @@
 #include	<iostream>
 
 #include	"Particle.hpp"
+#include	"Configuration.hpp"
 
 Particle::Particle() :
 	mInherentTime(0.0),
@@ -30,9 +31,21 @@ void	Particle::MoveToTime(const double	time){
 @return absolut time of collision. Negative values mean collision won't happen!
 **/
 double	Particle::CalcCollisionTimeWithWall(const Vector& point, const Vector& normal){
+	if (dot(mSpeed, normal)>0) return -1;
 	//normal constant of plane equation
 	double	c = -dot(point, normal);
 	return (mRadius - dot(normal, mPosition) - c)/(dot(normal, mSpeed)) + mInherentTime;
+}
+/**
+@param point point within the wall
+@param normal normal vector of the wall
+@return absolut time of collision. Negative values mean collision won't happen!
+**/
+double	Particle::CalcCollisionTimeWithWallCenter(const Vector& point, const Vector& normal){
+	if (dot(mSpeed, normal)>0) return -1;
+	//normal constant of plane equation
+	double	c = -dot(point, normal);
+	return (- dot(normal, mPosition) - c)/(dot(normal, mSpeed)) + mInherentTime;
 }
 /**
 @param particle second particle for the collision test
@@ -40,9 +53,20 @@ double	Particle::CalcCollisionTimeWithWall(const Vector& point, const Vector& no
 @return absolut time of collision. Negative values mean collision won't happen!
 **/
 double	Particle::CalcCollisionTimeWithParticle(const Particle& particle, const double systemTime){
+	Vector	cor(0,0,0);
+	Vector  dist = mPosition - particle.mPosition;
+	if (dist[0]>gConfig.mBoxWidth*0.5) cor[0] = -gConfig.mBoxWidth;
+	if (dist[0]<-gConfig.mBoxWidth*0.5) cor[0] = gConfig.mBoxWidth;
+	if (dist[1]>gConfig.mBoxHeight*0.5) cor[1] = -gConfig.mBoxHeight;
+	if (dist[1]<-gConfig.mBoxHeight*0.5) cor[1] = gConfig.mBoxHeight;
+
+	mPosition += cor;
+
 	double d = mRadius + particle.mRadius;
 	Vector x = mPosition - mSpeed*mInherentTime - particle.mPosition + particle.mSpeed*particle.mInherentTime;
 	Vector y = mSpeed - particle.mSpeed;
+
+	mPosition -= cor;
 	// |x + y * t| = d
 	double	a = norm2(y);
 	double	b = 2.0*dot(x,y);
@@ -61,8 +85,7 @@ double	Particle::CalcCollisionTimeWithParticle(const Particle& particle, const d
 @param normal normal vector of the wall plane
 **/
 void	Particle::CollideWithWall(const Vector& point, const Vector& normal){
-	if (dot(mSpeed, normal)<0)
-		mSpeed -= 2.0 * normal * dot(normal, mSpeed);
+	mSpeed -= 2.0 * normal * dot(normal, mSpeed);
 }
 /**
 The speed of both particles will be recalculated!
@@ -70,6 +93,15 @@ The speed of both particles will be recalculated!
 **/
 //http://www.spieleprogrammierung.net/2010/01/kollision-von-massenpunkten-im-3d-raum.html
 void	Particle::CollideWithParticle(Particle& particle){
+	Vector	cor(0,0,0);
+	Vector  dist = mPosition - particle.mPosition;
+	if (dist[0]>gConfig.mBoxWidth*0.5) cor[0] = -gConfig.mBoxWidth;
+	if (dist[0]<-gConfig.mBoxWidth*0.5) cor[0] = gConfig.mBoxWidth;
+	if (dist[1]>gConfig.mBoxHeight*0.5) cor[1] = -gConfig.mBoxHeight;
+	if (dist[1]<-gConfig.mBoxHeight*0.5) cor[1] = gConfig.mBoxHeight;
+
+	mPosition += cor;
+
     // Berechnung der Kollisionsachse (normierte Verbindungslinie zwischen
     // den kollidierenden Massepunkten):
     Vector CollisionAxis = particle.mPosition - mPosition;
@@ -115,5 +147,7 @@ void	Particle::CollideWithParticle(Particle& particle){
 		mSpeed += CollisionAxisVelocity1;
 		particle.mSpeed += CollisionAxisVelocity2;
 	}
+
+	mPosition -= cor;
 }
 

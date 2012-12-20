@@ -14,24 +14,22 @@
 #include	"MDSystem.h"
 
 int main( unsigned int argc, char **argv ) {
-	Configuration	config;
-
-	config.ReadCommandLineParameters(argc, argv);
+	gConfig.ReadCommandLineParameters(argc, argv);
 
     const Vector main_size(800,600);
     const Vector secondary_size(400,300);
 
     Window* pMainWindow;
 
-    if (!config.mNoGUI)
+    if (!gConfig.mNoGUI)
         pMainWindow = new Window("event driven molecular dynamics simulation", main_size, 10);
 
-    MDSystem	mdSystem(config);
+    MDSystem	mdSystem;
 
-    std::cout << config << std::endl;
+    std::cout << gConfig << std::endl;
 
-    if (!config.mNoGUI)
-        pMainWindow->SetCameraPosition(Vector(-config.mBoxWidth*0.5, -config.mBoxHeight*0.5, -config.mBoxHeight*0.5));
+    if (!gConfig.mNoGUI)
+        pMainWindow->SetCameraPosition(Vector(-gConfig.mBoxWidth*0.5, -gConfig.mBoxHeight*0.5, -gConfig.mBoxHeight*0.5));
 
 	MeanVar	meanRuntime;
 	MeanVar	systemRuntime;
@@ -39,12 +37,12 @@ int main( unsigned int argc, char **argv ) {
 	boost::timer::cpu_timer timer;
 	boost::timer::cpu_timer timer2;
 
-    while (config.mRuns>0){
-		config.mRuns--;
+    while (gConfig.mRuns>0){
+		gConfig.mRuns--;
 		timer.start();
 
-        if (!config.mNoGUI){
-            if (pMainWindow->IsOpen()) config.mRuns = 1;
+        if (!gConfig.mNoGUI){
+            if (pMainWindow->IsOpen()) gConfig.mRuns = 1;
             pMainWindow->Clear();
             pMainWindow->ProcessEvents();
         }
@@ -55,9 +53,9 @@ int main( unsigned int argc, char **argv ) {
 		timer2.stop();
 		systemRuntime.Add(timer2.elapsed().user);
 
-        if (!config.mNoGUI){
+        if (!gConfig.mNoGUI){
 
-			pMainWindow->DrawRectangle(Vector(config.mBoxWidth*0.5, config.mBoxHeight*0.5, 0.0), config.mBoxWidth, config.mBoxHeight, gRed);
+			pMainWindow->DrawRectangle(Vector(gConfig.mBoxWidth*0.5, gConfig.mBoxHeight*0.5, 0.0), gConfig.mBoxWidth, gConfig.mBoxHeight, gRed);
 
             for(unsigned int i=0; i < mdSystem.GetNumberOfParticles(); i++)
                 pMainWindow->DrawCircle(mdSystem.mParticleVector[i].mPosition, mdSystem.mParticleVector[i].mColor, mdSystem.mParticleVector[i].mRadius);

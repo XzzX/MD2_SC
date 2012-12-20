@@ -50,6 +50,8 @@ class Particle {
 
 		///calculates the moment of the collision with a wall
 		double	CalcCollisionTimeWithWall(const Vector& point, const Vector& normal);
+		///calculates the moment of the collision with a wall without radius
+		double	CalcCollisionTimeWithWallCenter(const Vector& point, const Vector& normal);
 		///calculates the moment of the collision with a particle
 		double	CalcCollisionTimeWithParticle(const Particle& particle, const double systemTime);
 		///calculates the new speed after the collision with a wall

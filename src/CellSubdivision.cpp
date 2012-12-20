@@ -65,3 +65,32 @@ list<unsigned int>::iterator CellSubdivision::GetNeighbours(const unsigned int c
 
     return m_neighbours.begin();
 }
+
+void	CellSubdivision::GetCellWallRight(const int cellId, Vector& point, Vector& normal){
+	normal = Vector(-1,0,0);
+	int x;
+	int y;
+	GetCoordinates(cellId, x, y);
+	point = Vector( (x+1.0) * m_cellWidth,0,0);
+}
+void	CellSubdivision::GetCellWallLeft(const int cellId, Vector& point, Vector& normal){
+	normal = Vector(1,0,0);
+	int x;
+	int y;
+	GetCoordinates(cellId, x, y);
+	point = Vector( (x) * m_cellWidth,0,0);
+}
+void	CellSubdivision::GetCellWallBottom(const int cellId, Vector& point, Vector& normal){
+	normal = Vector(0,1,0);
+	int x;
+	int y;
+	GetCoordinates(cellId, x, y);
+	point = Vector( 0, y * m_cellHeight,0);
+}
+void	CellSubdivision::GetCellWallTop(const int cellId, Vector& point, Vector& normal){
+	normal = Vector(0,-1,0);
+	int x;
+	int y;
+	GetCoordinates(cellId, x, y);
+	point = Vector( 0, (y+1) * m_cellHeight,0);
+}

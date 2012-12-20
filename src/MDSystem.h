@@ -5,9 +5,13 @@
 #include	<boost/random/mersenne_twister.hpp>
 #include	<boost/random/uniform_01.hpp>
 
+#include	"Vector.hpp"
+
 class	Configuration;
 class	Particle;
 class	Event;
+class	EventCalendar;
+class	CellSubdivision;
 
 /**
 Container class for the simulation environment.
@@ -16,17 +20,25 @@ class	MDSystem{
 	private:
 		///random number generator
 		boost::random::mt19937 mRNG;
-		///width of the simulation box
-		double	mBoxWidth;
-		///height of the simulation box
-		double	mBoxHeight;
 		///current system time
 		double	mSystemTime;
+
+		EventCalendar*	mEventCalendar;
+
+		CellSubdivision*	mCellSubdivision;
 
 		///updates inherent times of all particles to mSystemTime
 		void	UpdateParticles();
 
+		void	CorrectDistance(Vector& dist);
+
+		void	CorrectPosition(Particle& part);
+		void	CorrectPosition(Vector& vec);
 		double	RandomUniform(const double min, const double max);
+
+		void	InitParticlesOne();
+		void	InitParticlesRectangular();
+		void	InitParticlesTriangular();
 	public:
 		///list of particles
 		std::vector<Particle>	mParticleVector;
@@ -35,12 +47,12 @@ class	MDSystem{
 		///evolves the system until next event
 		void	MoveToNextEvent();
 		///runs actions needed to complete the event
-		void	EvaluateEvent(const Event& event);
+		void	EvaluateEvent(Event& event);
 
-		MDSystem(Configuration&	config);
+		void	RenewEventsWithParticle(const int pid);
 
-		void	InitParticlesOne(Configuration& config);
-		void	InitParticlesRectangular(Configuration& config);
+		MDSystem();
+		~MDSystem();
 };
 
 inline

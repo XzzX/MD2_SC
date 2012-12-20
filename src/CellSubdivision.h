@@ -38,6 +38,11 @@ class CellSubdivision {
 		void	GetCoordinates(const unsigned int cellId, int& x, int& y); //inline
         void	NormaliseCoordinates(int& x, int& y);
 	public:
+		void	GetCellWallRight(const int cellId, Vector& point, Vector& normal);
+		void	GetCellWallLeft(const int cellId, Vector& point, Vector& normal);
+		void	GetCellWallBottom(const int cellId, Vector& point, Vector& normal);
+		void	GetCellWallTop(const int cellId, Vector& point, Vector& normal);
+
 		unsigned int GetNumCellsX(); //inline
 		unsigned int GetNumCellsY(); //inline
 		Color	GetCellColor(const unsigned int cellId); //inline

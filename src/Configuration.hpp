@@ -39,6 +39,7 @@ class Configuration{
 
 		unsigned int mNumberOfParticles;		///<number of particles in the simulation
 		double	mLatticeSpace;					///<space between particles
+		double	mAxialRatio;					///<v/h
 		double	mBoxWidth;						///<width  of the  simulation area
 		double	mBoxHeight;						///<height of the simulation area
 
@@ -56,6 +57,8 @@ class Configuration{
 		///read out the command line parameters
 		void	ReadCommandLineParameters( unsigned int argc, char **argv );
 };
+
+extern	Configuration	gConfig;
 
 ///overloaded << operator to show easily the configuration on the screen
 std::ostream &operator << (std::ostream &stream, const Configuration& config);
