@@ -47,7 +47,7 @@ int main( unsigned int argc, char **argv ) {
             pMainWindow->ProcessEvents();
         }
 
-		//md_system.Observe();
+		mdSystem.Observe();
 		timer2.start();
         mdSystem.MoveToNextEvent();
 		timer2.stop();
@@ -66,6 +66,9 @@ int main( unsigned int argc, char **argv ) {
         timer.stop();
         meanRuntime.Add(timer.elapsed().user);
     }
+
+	gConfig.SaveConfiguration();
+	mdSystem.DumpData();
 	
 	std::cout << systemRuntime.Mean() << "\t" << systemRuntime.Error() << std::endl;
 	std::cout << "#mean runtime per cycle: \t" << meanRuntime.Mean() << std::endl;

@@ -1,5 +1,7 @@
 #include	"MDSystem.h"
 
+#include	<fstream>
+
 #include	"Configuration.hpp"
 #include	"Particle.hpp"
 #include	"EventCalendar.h"
@@ -15,11 +17,14 @@ MDSystem::MDSystem():
 	if (gConfig.mLatticeType == rectangular) InitParticlesRectangular();
 	if (gConfig.mLatticeType == triangular) InitParticlesTriangular();
 
+	SetCMSP0();
+
 	mCellSubdivision = new CellSubdivision(gConfig.mBoxWidth, gConfig.mBoxHeight, 5.0);
 
 	mEventCalendar = new EventCalendar(gConfig.mNumberOfParticles);
 	mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
 	for (unsigned int i=0; i<gConfig.mNumberOfParticles; i++){
+		mParticleStartPosition.push_back(mParticleVector[i].mPosition);
 		mParticleVector[i].mCellId = mCellSubdivision->InsertParticle(mParticleVector[i].mPosition + mParticleVector[i].mSpeed*0.001, i);
 		mParticleVector[i].mColor = mCellSubdivision->GetCellColor(mParticleVector[i].mCellId);
 		RenewEventsWithParticle(i);
@@ -327,4 +332,99 @@ void	MDSystem::RenewEventsWithParticle(const int pid){
 		if (t>mSystemTime) 
 			mEventCalendar->InsertEvent(t, pid, *it);
 	}
+}
+
+void MDSystem::SetCMSP0(){
+    //berechne Gesamtimpuls
+    Vector p(0,0,0);
+
+    for (unsigned int i=0; i<mParticleVector.size(); i++){
+        p += mParticleVector[i].mSpeed * mParticleVector[i].mMass;
+    }
+
+    p /= static_cast<double>(mParticleVector.size());
+
+    std::cout << "Gesamtimpuls: " << p << std::endl;
+
+    //Neuberechnung der Impulse
+
+    for (unsigned int i=0; i<mParticleVector.size(); i++){
+        mParticleVector[i].mSpeed -= p / mParticleVector[i].mMass;
+    }
+}
+
+void MDSystem::Observe(){
+
+    Vector pos(0,0,0);
+    Vector v(0,0,0);
+    double  D = 0.0;
+    double  D2 = 0.0;
+    Vector  a(gConfig.mBoxWidth,0.0,0.0);
+    Vector  b(0.0,gConfig.mBoxHeight,0.0);
+    for (unsigned int i = 0; i < GetNumberOfParticles(); i++){
+        pos += mParticleVector[i].mPosition;
+		v += mParticleVector[i].mSpeed;
+		double  d = norm(mParticleVector[i].mPosition+mParticleVector[i].mBorderCrossingX*a+mParticleVector[i].mBorderCrossingY*b - mParticleStartPosition[i]);
+		D += d;
+		D2 += d*d;
+    }
+	mTime.push_back(mSystemTime);
+
+    mPositionList.push_back(pos / double(GetNumberOfParticles()));
+    mVelocityList.push_back(v / double(GetNumberOfParticles()));
+
+    mD.push_back(D/double(GetNumberOfParticles()));
+    mD2.push_back(D2/double(GetNumberOfParticles()));
+}
+
+/**
+Dumps observed data to file. Observed informations are:
+time
+position
+speed
+kinetic energy
+potential energy
+distance to start position
+distance to start position ^2
+@param filename filename of the dump file
+**/
+void    MDSystem::DumpData(){
+    fstream fout(gConfig.mLogName+".txt", fstream::out);
+
+	fout << gConfig;
+
+	list<double>::iterator it0 = mTime.begin();
+    list<Vector>::iterator it1 = mPositionList.begin();
+    list<Vector>::iterator it2 = mVelocityList.begin();
+    list<double>::iterator it3 = mD.begin();
+    list<double>::iterator it4 = mD2.begin();
+
+    for(unsigned int i=0; i<mPositionList.size(); i++, it0++, it1++, it2++, it3++, it4++){
+        fout << *it0 << "\t";
+        fout << *it1 << "\t";
+		fout << *it2 << "\t";
+		fout << *it3 << "\t";
+		fout << *it4 << endl;
+    }
+    fout.close();
+
+    fout.open(gConfig.mLogName+"_correlation.txt", fstream::out);
+	fout << gConfig;
+
+    for (unsigned int i = 0; i < GetNumberOfParticles(); i++)
+        for (unsigned int j = i+1; j < GetNumberOfParticles(); j++){
+            Vector rij(mParticleVector[j].mPosition - mParticleVector[i].mPosition);
+            CorrectDistance(rij);
+            fout << norm(rij) << std::endl;
+        }
+    fout.close();
+
+    fout.open(gConfig.mLogName+"_speed.txt", fstream::out);
+	fout << gConfig;
+
+	for (unsigned int i=0; i<GetNumberOfParticles(); i++){
+        fout << norm(mParticleVector[i].mSpeed) << std::endl;
+	}
+
+	fout.close();
 }

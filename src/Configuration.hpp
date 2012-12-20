@@ -56,6 +56,7 @@ class Configuration{
 		Configuration();
 		///read out the command line parameters
 		void	ReadCommandLineParameters( unsigned int argc, char **argv );
+		void	SaveConfiguration();
 };
 
 extern	Configuration	gConfig;

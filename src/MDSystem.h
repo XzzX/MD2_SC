@@ -2,6 +2,7 @@
 #define MDSYSTEM_H
 
 #include	<vector>
+#include	<list>
 #include	<boost/random/mersenne_twister.hpp>
 #include	<boost/random/uniform_01.hpp>
 
@@ -27,6 +28,16 @@ class	MDSystem{
 
 		CellSubdivision*	mCellSubdivision;
 
+		std::vector< Vector >	mParticleStartPosition;
+
+		std::list<Vector>	mPositionList;
+		std::list<Vector>	mVelocityList;
+
+		std::list<double>	mD;
+		std::list<double>	mD2;
+
+		std::list<double>	mTime;
+
 		///updates inherent times of all particles to mSystemTime
 		void	UpdateParticles();
 
@@ -39,6 +50,8 @@ class	MDSystem{
 		void	InitParticlesOne();
 		void	InitParticlesRectangular();
 		void	InitParticlesTriangular();
+
+		void	SetCMSP0();
 	public:
 		///list of particles
 		std::vector<Particle>	mParticleVector;
@@ -53,6 +66,9 @@ class	MDSystem{
 
 		MDSystem();
 		~MDSystem();
+
+		void	Observe();
+		void	DumpData();
 };
 
 inline

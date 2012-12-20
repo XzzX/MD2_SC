@@ -1,5 +1,7 @@
 #include	"Configuration.hpp"
 
+#include	<fstream>
+
 #include	"util.h"
 
 Configuration	gConfig;
@@ -69,4 +71,23 @@ void	Configuration::ReadCommandLineParameters( unsigned int argc, char **argv ){
             mLogName = argv[i];
         }
     }
+}
+
+void Configuration::SaveConfiguration(){
+    std::fstream fout(gConfig.mLogName+"_conf.txt", std::fstream::out);
+	fout << gConfig;
+
+	fout << mRandomSeed << std::endl;
+	fout << mNumberOfParticles << std::endl;
+	fout << mLatticeSpace << std::endl;
+	fout << mAxialRatio << std::endl;
+	fout << mBoxWidth << std::endl;
+	fout << mBoxHeight << std::endl;
+	//fout << mLatticeType << std::endl;
+	fout << mParticleSpeed << std::endl;
+	fout << mRuns << std::endl;
+	fout << mNoGUI << std::endl;
+	//fout << mLogName << std::endl;
+
+    fout.close();
 }
