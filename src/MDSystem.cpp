@@ -208,8 +208,8 @@ void	MDSystem::EvaluateEvent(Event& event){
 		case	Event::UPDATE:
 			UpdateParticles();
 			mEventCalendar->RemoveEvent(&event);
-			if (!gConfig.mNoGUI)
-				mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
+			//if (!gConfig.mNoGUI)
+			//	mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
 			break;
 		case	Event::COLLISION_WITH_BOTTOM_WALL:
 			mParticleVector[event.mI].MoveToTime(mSystemTime);
@@ -283,16 +283,16 @@ void	MDSystem::RenewEventsWithParticle(const int pid){
 
 	/*
 	t = mParticleVector[pid].CalcCollisionTimeWithWall(Vector(0.0,0.0,0.0), Vector(0.0,1.0,0.0));
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_BOTTOM_WALL);
 	t = mParticleVector[pid].CalcCollisionTimeWithWall(Vector(0.0,0.0,0.0), Vector(1.0,0.0,0.0));
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_LEFT_WALL);
 	t = mParticleVector[pid].CalcCollisionTimeWithWall(Vector(0.0,gConfig.mBoxHeight,0.0), Vector(0.0,-1.0,0.0));
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_TOP_WALL);
 	t = mParticleVector[pid].CalcCollisionTimeWithWall(Vector(gConfig.mBoxWidth,0.0,0.0), Vector(-1.0,0.0,0.0));
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_RIGHT_WALL);
 	*/
 
@@ -300,28 +300,28 @@ void	MDSystem::RenewEventsWithParticle(const int pid){
 	Vector normal;
 	mCellSubdivision->GetCellWallBottom(mParticleVector[pid].mCellId, point, normal);
 	t = mParticleVector[pid].CalcCollisionTimeWithWallCenter(point, normal);
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_BOTTOM_CELLWALL);
 
 	mCellSubdivision->GetCellWallLeft(mParticleVector[pid].mCellId, point, normal);
 	t = mParticleVector[pid].CalcCollisionTimeWithWallCenter(point, normal);
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_LEFT_CELLWALL);
 
 	mCellSubdivision->GetCellWallTop(mParticleVector[pid].mCellId, point, normal);
 	t = mParticleVector[pid].CalcCollisionTimeWithWallCenter(point, normal);
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_TOP_CELLWALL);
 
 	mCellSubdivision->GetCellWallRight(mParticleVector[pid].mCellId, point, normal);
 	t = mParticleVector[pid].CalcCollisionTimeWithWallCenter(point, normal);
-	if (t>mSystemTime) 
+	if (t>mSystemTime)
 		mEventCalendar->InsertEvent(t, pid, Event::COLLISION_WITH_RIGHT_CELLWALL);
 
 	/*for (unsigned int i = 0; i<GetNumberOfParticles(); i++){
 		if (i!=pid){
 			t = mParticleVector[pid].CalcCollisionTimeWithParticle(mParticleVector[i], mSystemTime);
-			if (t>mSystemTime) 
+			if (t>mSystemTime)
 				mEventCalendar->InsertEvent(t, pid, i);
 		}
 	}*/
@@ -329,7 +329,7 @@ void	MDSystem::RenewEventsWithParticle(const int pid){
     mCellSubdivision->GetNeighbours(mParticleVector[pid].mCellId, pid);
     for (it=mCellSubdivision->GetNeighbourBegin(); it!=mCellSubdivision->GetNeighbourEnd(); it++){
 		t = mParticleVector[pid].CalcCollisionTimeWithParticle(mParticleVector[*it], mSystemTime);
-		if (t>mSystemTime) 
+		if (t>mSystemTime)
 			mEventCalendar->InsertEvent(t, pid, *it);
 	}
 }
@@ -389,7 +389,7 @@ distance to start position ^2
 @param filename filename of the dump file
 **/
 void    MDSystem::DumpData(){
-    fstream fout(gConfig.mLogName+".txt", fstream::out);
+    fstream fout((gConfig.mLogName+".txt").c_str(), fstream::out);
 
 	fout << gConfig;
 
@@ -408,7 +408,7 @@ void    MDSystem::DumpData(){
     }
     fout.close();
 
-    fout.open(gConfig.mLogName+"_correlation.txt", fstream::out);
+    fout.open((gConfig.mLogName+"_correlation.txt").c_str(), fstream::out);
 	fout << gConfig;
 
     for (unsigned int i = 0; i < GetNumberOfParticles(); i++)
@@ -419,7 +419,7 @@ void    MDSystem::DumpData(){
         }
     fout.close();
 
-    fout.open(gConfig.mLogName+"_speed.txt", fstream::out);
+    fout.open((gConfig.mLogName+"_speed.txt").c_str(), fstream::out);
 	fout << gConfig;
 
 	for (unsigned int i=0; i<GetNumberOfParticles(); i++){

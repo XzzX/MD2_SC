@@ -24,7 +24,7 @@ std::ostream &operator << (std::ostream &stream, const Configuration& config){
 
 Configuration::Configuration() :
 	mRandomSeed(time(0)),
-	mNumberOfParticles(100),
+	mNumberOfParticles(1000),
 	mLatticeSpace(3.0),
 	mAxialRatio(1.0),
 	mBoxWidth(50.0),
@@ -74,7 +74,7 @@ void	Configuration::ReadCommandLineParameters( unsigned int argc, char **argv ){
 }
 
 void Configuration::SaveConfiguration(){
-    std::fstream fout(gConfig.mLogName+"_conf.txt", std::fstream::out);
+    std::fstream fout((gConfig.mLogName+"_conf.txt").c_str(), std::fstream::out);
 	fout << gConfig;
 
 	fout << mRandomSeed << std::endl;
