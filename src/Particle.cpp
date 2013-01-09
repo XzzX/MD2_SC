@@ -12,7 +12,9 @@ Particle::Particle() :
     mColor(gWhite),
     mCellId(0),
     mBorderCrossingX(0),
-    mBorderCrossingY(0){
+    mBorderCrossingY(0),
+	mClusterNext(0),
+	mClusterPrev(0){
 }
 
 /**
@@ -78,6 +80,27 @@ double	Particle::CalcCollisionTimeWithParticle(const Particle& particle, const d
 	if	( (t1<t2) && (t1>systemTime) )  return t1;
 	if	( (t2>systemTime) )  return t2;
 	return -1.0;
+}
+
+/**
+@param particle second particle for the collision test
+@return collision?
+**/
+bool	Particle::OverlapWithParticle(const Particle& particle){
+	return (norm(mPosition - particle.mPosition) - mRadius - particle.mRadius <= 0);
+}
+
+/**
+@param particle second particle for the connection test
+@return connection?
+**/
+bool	Particle::IsConnected(const Particle& particle){
+	Particle* current = this;
+	do{
+		if (current==&particle) return true;
+		current = (*current).mClusterNext;
+	}while (current!=this);
+	return false;
 }
 
 /**

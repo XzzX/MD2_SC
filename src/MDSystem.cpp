@@ -16,6 +16,7 @@ MDSystem::MDSystem():
 	if (gConfig.mLatticeType == onlyone) InitParticlesOne();
 	if (gConfig.mLatticeType == rectangular) InitParticlesRectangular();
 	if (gConfig.mLatticeType == triangular) InitParticlesTriangular();
+	if (gConfig.mLatticeType == random) InitParticlesRandom();
 
 	SetCMSP0();
 
@@ -23,12 +24,12 @@ MDSystem::MDSystem():
 
 	mEventCalendar = new EventCalendar(gConfig.mNumberOfParticles);
 	mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
-	for (unsigned int i=0; i<gConfig.mNumberOfParticles; i++){
+	/*for (unsigned int i=0; i<gConfig.mNumberOfParticles; i++){
 		mParticleStartPosition.push_back(mParticleVector[i].mPosition);
 		mParticleVector[i].mCellId = mCellSubdivision->InsertParticle(mParticleVector[i].mPosition + mParticleVector[i].mSpeed*0.001, i);
 		mParticleVector[i].mColor = mCellSubdivision->GetCellColor(mParticleVector[i].mCellId);
 		RenewEventsWithParticle(i);
-	}
+	}*/
 }
 MDSystem::~MDSystem(){
 	delete mEventCalendar;
@@ -169,6 +170,90 @@ void MDSystem::InitParticlesTriangular(){
     gConfig.mBoxHeight = b[1] * (numb-1) + gConfig.mLatticeSpace;
     gConfig.mBoxWidth  = a[0] * (numa-1) + gConfig.mLatticeSpace;
 	gConfig.mNumberOfParticles = numa*numb;
+}
+
+/**
+Tries to initialise m_config.number_particles particles in a random pattern.
+**/
+void MDSystem::InitParticlesRandom(){
+
+    for (unsigned int i = 0; i<gConfig.mNumberOfParticles; i++){
+        Particle dummy;
+
+        dummy.mPosition = Vector(RandomUniform(0.0, gConfig.mL), RandomUniform(0.0, gConfig.mL), 0.0);
+
+        mParticleVector.push_back(dummy);
+    }
+
+    gConfig.mBoxHeight = gConfig.mL;
+    gConfig.mBoxWidth  = gConfig.mL;
+}
+
+void	MDSystem::RandomizeParticles(){
+    for (unsigned int i = 0; i<gConfig.mNumberOfParticles; i++){
+        mParticleVector[i].mPosition = Vector(RandomUniform(0.0, gConfig.mL), RandomUniform(0.0, gConfig.mL), 0.0);
+    }
+
+    gConfig.mBoxHeight = gConfig.mL;
+    gConfig.mBoxWidth  = gConfig.mL;
+}
+
+void	MDSystem::BuildCluster(){
+	for (unsigned int i=0; i<GetNumberOfParticles(); i++){
+		///not a member of an already existing cluster
+		if (mParticleVector[i].mClusterNext==0){
+			mParticleVector[i].mClusterNext = &mParticleVector[i];
+			mParticleVector[i].mClusterPrev = &mParticleVector[i];
+		}
+
+		for (unsigned int j=i+1; j<GetNumberOfParticles(); j++){
+			if (mParticleVector[i].OverlapWithParticle(mParticleVector[j])){
+				if (mParticleVector[j].mClusterNext==0){
+					mParticleVector[j].mClusterNext = &mParticleVector[j];
+					mParticleVector[j].mClusterPrev = &mParticleVector[j];
+				}
+				if (!mParticleVector[i].IsConnected(mParticleVector[j])){
+					Particle&	tempNexti = *mParticleVector[i].mClusterNext;
+					Particle&	tempNextj = *mParticleVector[j].mClusterNext;
+					mParticleVector[i].mClusterNext = &tempNextj;
+					mParticleVector[j].mClusterNext = &tempNexti;
+					tempNexti.mClusterPrev = &mParticleVector[j];
+					tempNextj.mClusterPrev = &mParticleVector[i];
+				}
+			}
+		}
+	}
+}
+
+bool MDSystem::IsPercolatic(){
+	BuildCluster();
+
+	Particle*	current;
+
+	for (unsigned int i=0; i<GetNumberOfParticles(); i++){
+		double xmin = 0.001;
+		double xmax = 0.001;
+		double ymin = 0.001;
+		double ymax = 0.001;
+
+		if (mParticleVector[i].mClusterNext!=0){
+			//cut chain
+			current = &mParticleVector[i];
+			do{
+				current = (*current).mClusterNext;
+				(*(*current).mClusterPrev).mClusterNext = 0;
+				(*current).mClusterPrev = 0;
+				if (xmin > (*current).mPosition[0]-(*current).mRadius) xmin = (*current).mPosition[0]-(*current).mRadius;
+				if (xmax < (*current).mPosition[0]+(*current).mRadius) xmax = (*current).mPosition[0]+(*current).mRadius;
+				if (ymin > (*current).mPosition[1]-(*current).mRadius) ymin = (*current).mPosition[1]-(*current).mRadius;
+				if (ymax < (*current).mPosition[1]+(*current).mRadius) ymax = (*current).mPosition[1]+(*current).mRadius;
+			}while ((*current).mClusterNext!=0);
+
+			if ((xmin<0)&&(xmax>gConfig.mL)) return true;
+			if ((ymin<0)&&(ymax>gConfig.mL)) return true;
+		}
+	}
+	return false;
 }
 
 void MDSystem::UpdateParticles(){
@@ -344,7 +429,7 @@ void MDSystem::SetCMSP0(){
 
     p /= static_cast<double>(mParticleVector.size());
 
-    std::cout << "Gesamtimpuls: " << p << std::endl;
+    //std::cout << "Gesamtimpuls: " << p << std::endl;
 
     //Neuberechnung der Impulse
 

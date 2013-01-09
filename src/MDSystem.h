@@ -50,6 +50,10 @@ class	MDSystem{
 		void	InitParticlesOne();
 		void	InitParticlesRectangular();
 		void	InitParticlesTriangular();
+		void	InitParticlesRandom();
+
+		///creates cluster structure for initialised particles
+		void	BuildCluster();
 
 		void	SetCMSP0();
 	public:
@@ -63,6 +67,12 @@ class	MDSystem{
 		void	EvaluateEvent(Event& event);
 
 		void	RenewEventsWithParticle(const int pid);
+
+
+		///randomizes the position of each particle
+		void	RandomizeParticles();
+		///test for percolations
+		bool	IsPercolatic();
 
 		MDSystem();
 		~MDSystem();

@@ -14,6 +14,7 @@ std::ostream &operator << (std::ostream &stream, const Configuration& config){
 	stream << "#axial ratio          " << config.mAxialRatio << std::endl;
 	stream << "#box_width:           " << config.mBoxWidth << std::endl;
 	stream << "#box height:          " << config.mBoxHeight << std::endl;
+	stream << "#box length:          " << config.mL << std::endl;
 	stream << "#lattice type:		 " << config.mLatticeType << std::endl;
 	stream << "#particle speed:		 " << config.mParticleSpeed << std::endl;
 	stream << "#runs:			     " << config.mRuns << std::endl;
@@ -24,12 +25,13 @@ std::ostream &operator << (std::ostream &stream, const Configuration& config){
 
 Configuration::Configuration() :
 	mRandomSeed(time(0)),
-	mNumberOfParticles(1000),
+	mNumberOfParticles(40),
 	mLatticeSpace(3.0),
 	mAxialRatio(1.0),
 	mBoxWidth(50.0),
 	mBoxHeight(50.0),
-	mLatticeType(triangular),
+	mL(10.0),
+	mLatticeType(random),
 	mParticleSpeed(2.0),
 	mRuns(1000),
 	mNoGUI(false),
@@ -70,6 +72,10 @@ void	Configuration::ReadCommandLineParameters( unsigned int argc, char **argv ){
 			i++;
             mLogName = argv[i];
         }
+		else if (cmd.compare("-L") == 0){
+			i++;
+            mL = StringTo<double>(argv[i]);
+        }
     }
 }
 
@@ -83,6 +89,7 @@ void Configuration::SaveConfiguration(){
 	fout << mAxialRatio << std::endl;
 	fout << mBoxWidth << std::endl;
 	fout << mBoxHeight << std::endl;
+	fout << mL << std::endl;
 	//fout << mLatticeType << std::endl;
 	fout << mParticleSpeed << std::endl;
 	fout << mRuns << std::endl;

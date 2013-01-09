@@ -14,20 +14,39 @@
 #include	"MDSystem.h"
 
 int main( unsigned int argc, char **argv ) {
+	boost::timer::auto_cpu_timer autoTimer;
+
 	gConfig.ReadCommandLineParameters(argc, argv);
 
     const Vector main_size(800,600);
     const Vector secondary_size(400,300);
 
-    Window* pMainWindow;
+    //Window* pMainWindow;
 
-    if (!gConfig.mNoGUI)
-        pMainWindow = new Window("event driven molecular dynamics simulation", main_size, 10);
+    //if (!gConfig.mNoGUI)
+    //    pMainWindow = new Window("event driven molecular dynamics simulation", main_size, 10);
 
-    MDSystem	mdSystem;
+	std::cout << gConfig << std::endl;
 
-    std::cout << gConfig << std::endl;
+	unsigned int limit = gConfig.mNumberOfParticles;
 
+	for (unsigned int number=1; number<limit; number++){
+
+		gConfig.mNumberOfParticles = number;
+
+		MDSystem	mdSystem;
+	
+		MeanVar	probability;
+
+		for (unsigned int i=0; i<1000; i++){
+			mdSystem.RandomizeParticles();
+			if (mdSystem.IsPercolatic() == 1)
+				probability.Add(1); else
+				probability.Add(0);
+		}
+		std::cout << gConfig.mNumberOfParticles << "\t" << probability.Mean() << std::endl;
+	}
+	/*
     if (!gConfig.mNoGUI)
         pMainWindow->SetCameraPosition(Vector(-gConfig.mBoxWidth*0.5, -gConfig.mBoxHeight*0.5, -gConfig.mBoxHeight*0.5));
 
@@ -47,7 +66,7 @@ int main( unsigned int argc, char **argv ) {
             pMainWindow->ProcessEvents();
         }
 
-		mdSystem.Observe();
+		//mdSystem.Observe();
 		timer2.start();
         mdSystem.MoveToNextEvent();
 		timer2.stop();
@@ -68,10 +87,12 @@ int main( unsigned int argc, char **argv ) {
     }
 
 	gConfig.SaveConfiguration();
-	mdSystem.DumpData();
+	//mdSystem.DumpData();
 	
 	std::cout << systemRuntime.Mean() << "\t" << systemRuntime.Error() << std::endl;
 	std::cout << "#mean runtime per cycle: \t" << meanRuntime.Mean() << std::endl;
+
+	*/
 
 	std::cout << "Finished" << std::endl;
     return 0;

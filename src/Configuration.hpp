@@ -11,7 +11,7 @@ enum LatticeTypes {
     onlyone,
     rectangular,
     triangular,
-    random_lattice,
+    random,
     individual
 };
 
@@ -23,7 +23,7 @@ inline std::ostream &operator << (std::ostream &stream, const LatticeTypes latti
         stream << "rectangular lattice";
     else if (lattice == triangular)
         stream << "triangular lattice";
-    else if (lattice == random_lattice)
+    else if (lattice == random)
         stream << "random positioning of the particles";
     else if (lattice == individual)
         stream << "individual configuration chosen";
@@ -46,6 +46,8 @@ class Configuration{
 		double	mParticleSpeed;					///<starting velocity of each particle
 
 		LatticeTypes	mLatticeType;			///<geometrical construction of lattice
+
+		double	mL;								///<length of the simulation box in random mode
 
 		unsigned int	mRuns;					///<number of simulation runs, only activ in nogui-mode
 		bool	mNoGUI;							///<run without a graphical user interface

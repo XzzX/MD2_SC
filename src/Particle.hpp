@@ -40,6 +40,11 @@ class Particle {
 		///number of border crossings of the simulation box in y direction
 		int mBorderCrossingY;
 
+		///next element in cluster
+		Particle*	mClusterNext;
+		///previous element in cluster
+		Particle*	mClusterPrev;
+
 		///initialise everything with basic data
 		Particle();
 
@@ -54,6 +59,10 @@ class Particle {
 		double	CalcCollisionTimeWithWallCenter(const Vector& point, const Vector& normal);
 		///calculates the moment of the collision with a particle
 		double	CalcCollisionTimeWithParticle(const Particle& particle, const double systemTime);
+		///calculates if two particles overlap
+		bool	OverlapWithParticle(const Particle& particle);
+
+		bool	IsConnected(const Particle& particle);
 		///calculates the new speed after the collision with a wall
 		void	CollideWithWall(const Vector& point, const Vector& normal);
 		///calculates the new speed after the collision with another particle
