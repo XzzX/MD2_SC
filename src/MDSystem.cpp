@@ -16,20 +16,20 @@ MDSystem::MDSystem():
 	if (gConfig.mLatticeType == onlyone) InitParticlesOne();
 	if (gConfig.mLatticeType == rectangular) InitParticlesRectangular();
 	if (gConfig.mLatticeType == triangular) InitParticlesTriangular();
-	if (gConfig.mLatticeType == random) InitParticlesRandom();
+	if (gConfig.mLatticeType == randomL) InitParticlesRandom();
 
-	SetCMSP0();
+	//SetCMSP0();
 
 	mCellSubdivision = new CellSubdivision(gConfig.mBoxWidth, gConfig.mBoxHeight, 5.0);
 
 	mEventCalendar = new EventCalendar(gConfig.mNumberOfParticles);
 	mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
-	/*for (unsigned int i=0; i<gConfig.mNumberOfParticles; i++){
+	for (unsigned int i=0; i<gConfig.mNumberOfParticles; i++){
 		mParticleStartPosition.push_back(mParticleVector[i].mPosition);
 		mParticleVector[i].mCellId = mCellSubdivision->InsertParticle(mParticleVector[i].mPosition + mParticleVector[i].mSpeed*0.001, i);
-		mParticleVector[i].mColor = mCellSubdivision->GetCellColor(mParticleVector[i].mCellId);
+		//mParticleVector[i].mColor = mCellSubdivision->GetCellColor(mParticleVector[i].mCellId);
 		RenewEventsWithParticle(i);
-	}*/
+	}
 }
 MDSystem::~MDSystem(){
 	delete mEventCalendar;
@@ -181,10 +181,28 @@ void MDSystem::InitParticlesRandom(){
         Particle dummy;
 
         dummy.mPosition = Vector(RandomUniform(0.0, gConfig.mL), RandomUniform(0.0, gConfig.mL), 0.0);
+        //Ausnutzung numerischer Fehler
+        dummy.mMass = 1e50;
+        dummy.mRadius +=0.1-0.01;
 
         mParticleVector.push_back(dummy);
     }
 
+    Particle dummy;
+
+	dummy.mPosition = Vector(0.5, 0.5, 0.0);
+	//double alpha = RandomUniform(0.0, 2*M_PI);
+
+	double alpha = 1.23;
+	dummy.mSpeed = Vector(cos(alpha), sin(alpha), 0.0) * gConfig.mParticleSpeed;
+	//Ausnutzung numerischer Fehler
+	dummy.mMass = 1;
+	dummy.mRadius = 0.01;
+	dummy.mColor = gRed;
+
+	mParticleVector.push_back(dummy);
+
+	gConfig.mNumberOfParticles++;
     gConfig.mBoxHeight = gConfig.mL;
     gConfig.mBoxWidth  = gConfig.mL;
 }
@@ -292,9 +310,11 @@ void	MDSystem::EvaluateEvent(Event& event){
 			return;
 		case	Event::UPDATE:
 			UpdateParticles();
+			Observe();
+			gConfig.mRuns--;
 			mEventCalendar->RemoveEvent(&event);
 			//if (!gConfig.mNoGUI)
-			//	mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
+			mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
 			break;
 		case	Event::COLLISION_WITH_BOTTOM_WALL:
 			mParticleVector[event.mI].MoveToTime(mSystemTime);
@@ -323,7 +343,7 @@ void	MDSystem::EvaluateEvent(Event& event){
 			temp = (mParticleVector[event.mI].mPosition + Vector(0,-0.0001,0));
 			CorrectPosition(temp);
 			mParticleVector[event.mI].mCellId = mCellSubdivision->InsertParticle(temp, event.mI);
-			mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
+			//mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
 			RenewEventsWithParticle(event.mI);
 			break;
 		case	Event::COLLISION_WITH_LEFT_CELLWALL:
@@ -333,7 +353,7 @@ void	MDSystem::EvaluateEvent(Event& event){
 			temp = (mParticleVector[event.mI].mPosition + Vector(-0.0001,0,0));
 			CorrectPosition(temp);
 			mParticleVector[event.mI].mCellId = mCellSubdivision->InsertParticle(temp, event.mI);
-			mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
+			//mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
 			RenewEventsWithParticle(event.mI);
 			break;
 		case	Event::COLLISION_WITH_TOP_CELLWALL:
@@ -343,7 +363,7 @@ void	MDSystem::EvaluateEvent(Event& event){
 			temp = (mParticleVector[event.mI].mPosition + Vector(0,0.0001,0));
 			CorrectPosition(temp);
 			mParticleVector[event.mI].mCellId = mCellSubdivision->InsertParticle(temp, event.mI);
-			mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
+			//mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
 			RenewEventsWithParticle(event.mI);
 			break;
 		case	Event::COLLISION_WITH_RIGHT_CELLWALL:
@@ -353,7 +373,7 @@ void	MDSystem::EvaluateEvent(Event& event){
 			temp = (mParticleVector[event.mI].mPosition + Vector(0.0001,0,0));
 			CorrectPosition(temp);
 			mParticleVector[event.mI].mCellId = mCellSubdivision->InsertParticle(temp, event.mI);
-			mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
+			//mParticleVector[event.mI].mColor = mCellSubdivision->GetCellColor(mParticleVector[event.mI].mCellId);
 			RenewEventsWithParticle(event.mI);
 			break;
 	}
@@ -361,6 +381,8 @@ void	MDSystem::EvaluateEvent(Event& event){
 
 void	MDSystem::RenewEventsWithParticle(const int pid){
 	assert(pid>=0);
+
+	if (mParticleVector[pid].mMass>1e10) return;
 
 	mEventCalendar->RemoveAllEventsWithParticle(pid);
 
@@ -446,7 +468,7 @@ void MDSystem::Observe(){
     double  D2 = 0.0;
     Vector  a(gConfig.mBoxWidth,0.0,0.0);
     Vector  b(0.0,gConfig.mBoxHeight,0.0);
-    for (unsigned int i = 0; i < GetNumberOfParticles(); i++){
+    for (unsigned int i = GetNumberOfParticles()-1; i < GetNumberOfParticles(); i++){
         pos += mParticleVector[i].mPosition;
 		v += mParticleVector[i].mSpeed;
 		double  d = norm(mParticleVector[i].mPosition+mParticleVector[i].mBorderCrossingX*a+mParticleVector[i].mBorderCrossingY*b - mParticleStartPosition[i]);
@@ -455,8 +477,8 @@ void MDSystem::Observe(){
     }
 	mTime.push_back(mSystemTime);
 
-    mPositionList.push_back(pos / double(GetNumberOfParticles()));
-    mVelocityList.push_back(v / double(GetNumberOfParticles()));
+    //mPositionList.push_back(pos / double(GetNumberOfParticles()));
+    //mVelocityList.push_back(v / double(GetNumberOfParticles()));
 
     mD.push_back(D/double(GetNumberOfParticles()));
     mD2.push_back(D2/double(GetNumberOfParticles()));
@@ -484,10 +506,10 @@ void    MDSystem::DumpData(){
     list<double>::iterator it3 = mD.begin();
     list<double>::iterator it4 = mD2.begin();
 
-    for(unsigned int i=0; i<mPositionList.size(); i++, it0++, it1++, it2++, it3++, it4++){
+    for(unsigned int i=0; i<mD2.size(); i++, it0++, it3++, it4++){
         fout << *it0 << "\t";
-        fout << *it1 << "\t";
-		fout << *it2 << "\t";
+        //fout << *it1 << "\t";
+		//fout << *it2 << "\t";
 		fout << *it3 << "\t";
 		fout << *it4 << endl;
     }

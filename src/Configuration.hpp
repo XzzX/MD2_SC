@@ -11,7 +11,7 @@ enum LatticeTypes {
     onlyone,
     rectangular,
     triangular,
-    random,
+    randomL,
     individual
 };
 
@@ -23,7 +23,7 @@ inline std::ostream &operator << (std::ostream &stream, const LatticeTypes latti
         stream << "rectangular lattice";
     else if (lattice == triangular)
         stream << "triangular lattice";
-    else if (lattice == random)
+    else if (lattice == randomL)
         stream << "random positioning of the particles";
     else if (lattice == individual)
         stream << "individual configuration chosen";

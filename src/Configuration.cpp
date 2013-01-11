@@ -24,16 +24,16 @@ std::ostream &operator << (std::ostream &stream, const Configuration& config){
 }
 
 Configuration::Configuration() :
-	mRandomSeed(time(0)),
-	mNumberOfParticles(40),
+	mRandomSeed(13579059208),
+	mNumberOfParticles(20),
 	mLatticeSpace(3.0),
 	mAxialRatio(1.0),
 	mBoxWidth(50.0),
 	mBoxHeight(50.0),
 	mL(10.0),
-	mLatticeType(random),
+	mLatticeType(randomL),
 	mParticleSpeed(2.0),
-	mRuns(1000),
+	mRuns(3000),
 	mNoGUI(false),
 	mLogName("data")
 {}

@@ -11,6 +11,8 @@
 #include "Vector.hpp"
 #include "Particle.hpp"
 
+#include <SFML/Graphics.hpp>
+
 class Window
 {
   public:
@@ -41,6 +43,8 @@ class Window
 
 	void SetCameraPosition(const Vector& pos);
 
+    sf::RenderWindow* App;
+
   private:
     GLuint circleList;
     Vector L;
@@ -48,7 +52,6 @@ class Window
     Vector position_mouse;
 
     double windowRatio;
-    sf::Window* App;
     unsigned int referenceCounter;
     unsigned int m_segments;
 };

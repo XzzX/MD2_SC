@@ -1,6 +1,8 @@
 #include "Window.hpp"
 #include <limits>
 
+#include <SFML/Graphics.hpp>
+
 const double PI180=3.141592653589793/180;
 
 Window::Window(std::string title, Vector _L, const unsigned int subdivisions)
@@ -18,7 +20,7 @@ Window::Window(std::string title, Vector _L, const unsigned int subdivisions)
     settings.StencilBits=8;
     settings.AntialiasingLevel=2;
     windowRatio=800./600;
-    App=new sf::Window(sf::VideoMode(L[0], L[0]/windowRatio, 32), title, sf::Style::Close, settings);
+    App=new sf::RenderWindow(sf::VideoMode(L[0], L[0]/windowRatio, 32), title, sf::Style::Close, settings);
 
     // Set color and depth clear value
     glClearDepth(1.f);
@@ -47,8 +49,6 @@ void Window::ProcessEvents()
     sf::Event Event;
     while (App->GetEvent(Event))
     {
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Close window : exit
         if (Event.Type == sf::Event::Closed)
@@ -79,6 +79,13 @@ void Window::ProcessEvents()
         if ((Event.Type == sf::Event::KeyPressed) && (Event.Key.Code == sf::Key::Subtract))
         {
             position_camera[2] -= 10.0f;
+        }
+
+        if ((Event.Type == sf::Event::KeyPressed) && (Event.Key.Code == sf::Key::S))
+        {
+            sf::Image Screen = App->Capture();
+			Screen.SaveToFile("screenshot.jpg");
+
         }
 
         if ((Event.Type == sf::Event::KeyPressed) && (Event.Key.Code == sf::Key::Q))
@@ -115,7 +122,7 @@ void Window::Clear()
 {
     App->SetActive();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Window::DrawCircle(const Vector &pos, const Color &color, const double r) const
@@ -127,10 +134,11 @@ void Window::DrawCircle(const Vector &pos, const Color &color, const double r) c
 
     //Draw single particle
     glColor3f(color.mR, color.mG, color.mB);
-    glLineWidth(2.0f);
-    glBegin(GL_LINE_LOOP);
+    //glLineWidth(2.0f);
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(pos[0], pos[1], 0.0f);
     const double frequency = 2.0*M_PI/(this)->m_segments;
-    for(unsigned int i = 0; i < (this)->m_segments; i++) {
+    for(unsigned int i = 0; i <= (this)->m_segments; i++) {
         const double angle = i*frequency;
         glVertex3f(pos[0] + (cos(angle) * r), pos[1] + (sin(angle) * r), 0.0f);
     }
@@ -143,7 +151,7 @@ void Window::DrawRectangle(const Vector &pos, const double width, const double h
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glTranslatef(position_camera[0], position_camera[1], position_camera[2]);
-    glLineWidth(1.0f);
+    glLineWidth(2.0f);
     glColor3f(color.mR, color.mG, color.mB);
     glBegin(GL_LINE_LOOP);
         glVertex3f(pos[0] -0.5*width, pos[1]+0.5*height, 0.0);
@@ -173,7 +181,7 @@ void Window::DrawHline(const double x, const double y, const Color &color) const
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glTranslatef(position_camera[0], position_camera[1], position_camera[2]);
-    glLineWidth(1.0f);
+    glLineWidth(2.0f);
     glColor3f(color.mR, color.mG, color.mB);
 
     glBegin(GL_LINE_STRIP);
@@ -188,7 +196,7 @@ void Window::DrawVline(const double x, const double y, const Color &color) const
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glTranslatef(position_camera[0], position_camera[1], position_camera[2]);
-    glLineWidth(1.0f);
+    glLineWidth(2.0f);
     glColor3f(color.mR, color.mG, color.mB);
 
     glBegin(GL_LINE_STRIP);
