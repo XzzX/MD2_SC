@@ -22,9 +22,9 @@ MDSystem::MDSystem():
 
 	mCellSubdivision = new CellSubdivision(gConfig.mBoxWidth, gConfig.mBoxHeight, 5.0);
 
-	mEventCalendar = new EventCalendar(gConfig.mNumberOfParticles);
+	mEventCalendar = new EventCalendar(gConfig.mNumberOfParticles+gConfig.mNumberOfTestParticles);
 	mEventCalendar->InsertEvent(mSystemTime+0.01, -1, Event::UPDATE);
-	for (unsigned int i=0; i<gConfig.mNumberOfParticles; i++){
+	for (unsigned int i=0; i<GetNumberOfParticles(); i++){
 		mParticleStartPosition.push_back(mParticleVector[i].mPosition);
 		mParticleVector[i].mCellId = mCellSubdivision->InsertParticle(mParticleVector[i].mPosition + mParticleVector[i].mSpeed*0.001, i);
 		//mParticleVector[i].mColor = mCellSubdivision->GetCellColor(mParticleVector[i].mCellId);
@@ -40,10 +40,10 @@ Calculates the minimum distance between two particles in correspondence to bound
 @param dist plain distance between two particles
 **/
 void	MDSystem::CorrectDistance(Vector& dist){
-	if (dist[0]>(gConfig.mBoxWidth*0.5)) dist[0]-=gConfig.mBoxWidth; else
-		if (dist[0]<(-gConfig.mBoxWidth*0.5)) dist[0]+=gConfig.mBoxWidth;
-	if (dist[1]>(gConfig.mBoxHeight*0.5)) dist[1]-=gConfig.mBoxHeight; else
-		if (dist[1]<(gConfig.mBoxHeight*0.5)) dist[1]+=gConfig.mBoxHeight;
+	while (dist[0]>(gConfig.mBoxWidth*0.5)) dist[0]-=gConfig.mBoxWidth;
+	while (dist[0]<(-gConfig.mBoxWidth*0.5)) dist[0]+=gConfig.mBoxWidth;
+	while (dist[1]>(gConfig.mBoxHeight*0.5)) dist[1]-=gConfig.mBoxHeight;
+	while (dist[1]<(-gConfig.mBoxHeight*0.5)) dist[1]+=gConfig.mBoxHeight;
 }
 
 /**
@@ -183,26 +183,32 @@ void MDSystem::InitParticlesRandom(){
         dummy.mPosition = Vector(RandomUniform(0.0, gConfig.mL), RandomUniform(0.0, gConfig.mL), 0.0);
         //Ausnutzung numerischer Fehler
         dummy.mMass = 1e50;
-        dummy.mRadius +=0.1-0.01;
+        dummy.mRadius = gConfig.mRadius;
 
         mParticleVector.push_back(dummy);
     }
 
-    Particle dummy;
+    for (unsigned int i = 0; i<gConfig.mNumberOfTestParticles; i++){
+        Particle dummy;
 
-	dummy.mPosition = Vector(0.5, 0.5, 0.0);
-	//double alpha = RandomUniform(0.0, 2*M_PI);
+		double alpha = RandomUniform(0.0, 2*M_PI);
+		dummy.mSpeed = Vector(cos(alpha), sin(alpha), 0.0) * gConfig.mParticleSpeed;
+		//Ausnutzung numerischer Fehler
+		dummy.mMass = 1;
+		dummy.mRadius = gConfig.mSigma;
+		dummy.mColor = gRed;
 
-	double alpha = 1.23;
-	dummy.mSpeed = Vector(cos(alpha), sin(alpha), 0.0) * gConfig.mParticleSpeed;
-	//Ausnutzung numerischer Fehler
-	dummy.mMass = 1;
-	dummy.mRadius = 0.01;
-	dummy.mColor = gRed;
+		bool	collision;
 
-	mParticleVector.push_back(dummy);
+		do{
+			collision = false;
+			dummy.mPosition = Vector(RandomUniform(0.0, gConfig.mL), RandomUniform(0.0, gConfig.mL), 0.0);
+			for (unsigned int j = 0; j<gConfig.mNumberOfParticles; j++) if (dummy.OverlapWithParticle(mParticleVector[j])) {collision = true; break;};
+		} while (collision);
 
-	gConfig.mNumberOfParticles++;
+		mParticleVector.push_back(dummy);
+    }
+
     gConfig.mBoxHeight = gConfig.mL;
     gConfig.mBoxWidth  = gConfig.mL;
 }
@@ -435,9 +441,11 @@ void	MDSystem::RenewEventsWithParticle(const int pid){
 	list<unsigned int>::iterator    it;
     mCellSubdivision->GetNeighbours(mParticleVector[pid].mCellId, pid);
     for (it=mCellSubdivision->GetNeighbourBegin(); it!=mCellSubdivision->GetNeighbourEnd(); it++){
-		t = mParticleVector[pid].CalcCollisionTimeWithParticle(mParticleVector[*it], mSystemTime);
-		if (t>mSystemTime)
-			mEventCalendar->InsertEvent(t, pid, *it);
+    	if (mParticleVector[*it].mMass>10){
+			t = mParticleVector[pid].CalcCollisionTimeWithParticle(mParticleVector[*it], mSystemTime);
+			if (t>mSystemTime)
+				mEventCalendar->InsertEvent(t, pid, *it);
+    	}
 	}
 }
 
@@ -468,7 +476,7 @@ void MDSystem::Observe(){
     double  D2 = 0.0;
     Vector  a(gConfig.mBoxWidth,0.0,0.0);
     Vector  b(0.0,gConfig.mBoxHeight,0.0);
-    for (unsigned int i = GetNumberOfParticles()-1; i < GetNumberOfParticles(); i++){
+    for (unsigned int i = gConfig.mNumberOfParticles; i < GetNumberOfParticles(); i++){
         pos += mParticleVector[i].mPosition;
 		v += mParticleVector[i].mSpeed;
 		double  d = norm(mParticleVector[i].mPosition+mParticleVector[i].mBorderCrossingX*a+mParticleVector[i].mBorderCrossingY*b - mParticleStartPosition[i]);
@@ -480,8 +488,8 @@ void MDSystem::Observe(){
     //mPositionList.push_back(pos / double(GetNumberOfParticles()));
     //mVelocityList.push_back(v / double(GetNumberOfParticles()));
 
-    mD.push_back(D/double(GetNumberOfParticles()));
-    mD2.push_back(D2/double(GetNumberOfParticles()));
+    mD.push_back(D/double(gConfig.mNumberOfTestParticles));
+    mD2.push_back(D2/double(gConfig.mNumberOfTestParticles));
 }
 
 /**
@@ -515,6 +523,7 @@ void    MDSystem::DumpData(){
     }
     fout.close();
 
+	/*
     fout.open((gConfig.mLogName+"_correlation.txt").c_str(), fstream::out);
 	fout << gConfig;
 
@@ -534,4 +543,5 @@ void    MDSystem::DumpData(){
 	}
 
 	fout.close();
+	*/
 }

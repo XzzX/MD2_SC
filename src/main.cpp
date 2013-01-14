@@ -32,6 +32,7 @@ int main( unsigned int argc, char **argv ) {
 
 	MDSystem	mdSystem;
 
+	std::cout << "#Perkolation:\t" <<  mdSystem.IsPercolatic() << std::endl;
 
     if (!gConfig.mNoGUI)
         pMainWindow->SetCameraPosition(Vector(-gConfig.mBoxWidth*0.5, -gConfig.mBoxHeight*0.5, -gConfig.mBoxHeight*0.5));
@@ -40,7 +41,7 @@ int main( unsigned int argc, char **argv ) {
 
 		pMainWindow->DrawRectangle(Vector(gConfig.mBoxWidth*0.5, gConfig.mBoxHeight*0.5, 0.0), gConfig.mBoxWidth, gConfig.mBoxHeight, gRed);
 
-		for(unsigned int i=0; i < mdSystem.GetNumberOfParticles()-1; i++){
+		for(unsigned int i=0; i < gConfig.mNumberOfParticles-1; i++){
 			pMainWindow->DrawCircle(mdSystem.mParticleVector[i].mPosition, mdSystem.mParticleVector[i].mColor, mdSystem.mParticleVector[i].mRadius);
 			if (mdSystem.mParticleVector[i].mPosition[0]<1) pMainWindow->DrawCircle(mdSystem.mParticleVector[i].mPosition+Vector(gConfig.mBoxWidth,0,0), mdSystem.mParticleVector[i].mColor, mdSystem.mParticleVector[i].mRadius);
 			if (mdSystem.mParticleVector[i].mPosition[0]>gConfig.mBoxWidth-1) pMainWindow->DrawCircle(mdSystem.mParticleVector[i].mPosition+Vector(-gConfig.mBoxWidth,0,0), mdSystem.mParticleVector[i].mColor, mdSystem.mParticleVector[i].mRadius);
@@ -54,6 +55,8 @@ int main( unsigned int argc, char **argv ) {
 
 	boost::timer::cpu_timer timer;
 	boost::timer::cpu_timer timer2;
+
+	std::cout << "#starting simulation" << std::endl;
 
     while (gConfig.mRuns>0){
 		timer.start();
@@ -72,7 +75,8 @@ int main( unsigned int argc, char **argv ) {
 
 			pMainWindow->DrawRectangle(Vector(gConfig.mBoxWidth*0.5, gConfig.mBoxHeight*0.5, 0.0), gConfig.mBoxWidth, gConfig.mBoxHeight, gRed);
 
-			pMainWindow->DrawCircle(mdSystem.mParticleVector[mdSystem.mParticleVector.size()-1].mPosition, mdSystem.mParticleVector[mdSystem.mParticleVector.size()-1].mColor, mdSystem.mParticleVector[mdSystem.mParticleVector.size()-1].mRadius);
+			for (unsigned int i=gConfig.mNumberOfParticles; i<mdSystem.GetNumberOfParticles(); i++)
+				pMainWindow->DrawCircle(mdSystem.mParticleVector[i].mPosition, mdSystem.mParticleVector[i].mColor, mdSystem.mParticleVector[i].mRadius);
 
             pMainWindow->Display();
         }
@@ -84,8 +88,8 @@ int main( unsigned int argc, char **argv ) {
 	gConfig.SaveConfiguration();
 	mdSystem.DumpData();
 
-	sf::Image Screen = pMainWindow->App->Capture();
-	Screen.SaveToFile((gConfig.mLogName+".jpg").c_str());
+	//sf::Image Screen = pMainWindow->App->Capture();
+	//Screen.SaveToFile((gConfig.mLogName+".jpg").c_str());
 
 	std::cout << systemRuntime.Mean() << "\t" << systemRuntime.Error() << std::endl;
 	std::cout << "#mean runtime per cycle: \t" << meanRuntime.Mean() << std::endl;

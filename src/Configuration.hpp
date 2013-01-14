@@ -48,6 +48,9 @@ class Configuration{
 		LatticeTypes	mLatticeType;			///<geometrical construction of lattice
 
 		double	mL;								///<length of the simulation box in random mode
+		double	mRadius;						///<radius of obstacles
+		double	mSigma;							///<radius of test particles
+		unsigned int	mNumberOfTestParticles; ///<number of test particles
 
 		unsigned int	mRuns;					///<number of simulation runs, only activ in nogui-mode
 		bool	mNoGUI;							///<run without a graphical user interface
